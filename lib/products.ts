@@ -14,11 +14,15 @@ import { configureLemonSqueezy, getStoreId } from '@/lib/lemonsqueezy'
 import type { BookwiseProduct } from '@/lib/types'
 import { formatCurrency } from '@/utils/formatCurrency'
 
+/** JSON:API 리소스 (목록·included 항목) */
+type ProductResource = Product['data']
+type VariantResource = Variant['data']
+
 const SELLABLE_PRODUCT_STATUSES = new Set(['published', 'draft'])
 
 function pickSellableVariant(
-  variants: Variant[],
-): Variant | undefined {
+  variants: VariantResource[],
+): VariantResource | undefined {
   if (!variants.length) return undefined
 
   const priority = ['published', 'pending', 'draft'] as const
@@ -31,8 +35,8 @@ function pickSellableVariant(
 }
 
 function resolvePriceFormatted(
-  product: Product,
-  variant: Variant,
+  product: ProductResource,
+  variant: VariantResource,
   storeCurrency: string,
 ): string {
   const variantCount = product.relationships?.variants?.data?.length ?? 0
@@ -46,8 +50,8 @@ function resolvePriceFormatted(
 }
 
 function mapProduct(
-  product: Product,
-  variants: Variant[],
+  product: ProductResource,
+  variants: VariantResource[],
   storeCurrency: string,
 ): BookwiseProduct | null {
   if (!SELLABLE_PRODUCT_STATUSES.has(product.attributes.status)) {
@@ -79,9 +83,9 @@ function mapProduct(
 }
 
 function variantsFromIncluded(
-  product: Product,
-  included: Variant[] | undefined,
-): Variant[] {
+  product: ProductResource,
+  included: VariantResource[] | undefined,
+): VariantResource[] {
   if (!included?.length) return []
 
   const variantIds = new Set(
@@ -96,9 +100,9 @@ function variantsFromIncluded(
 }
 
 async function loadVariantsForProduct(
-  product: Product,
-  listIncluded: Variant[] | undefined,
-): Promise<Variant[]> {
+  product: ProductResource,
+  listIncluded: VariantResource[] | undefined,
+): Promise<VariantResource[]> {
   const fromList = variantsFromIncluded(product, listIncluded)
   if (fromList.length > 0) return fromList
 
@@ -109,7 +113,7 @@ async function loadVariantsForProduct(
   if (!error && detail?.data) {
     const fromDetail = variantsFromIncluded(
       detail.data,
-      (detail.included ?? []) as Variant[],
+      (detail.included ?? []) as VariantResource[],
     )
     if (fromDetail.length > 0) return fromDetail
   }
@@ -146,8 +150,7 @@ async function assertApiAccess(): Promise<void> {
     throw new Error(storesError.message ?? 'Failed to list stores')
   }
 
-  const storeIds =
-    storesData?.data?.map((s) => s.id) ?? []
+  const storeIds = storesData?.data?.map((s) => s.id) ?? []
 
   if (storeIds.length > 0 && !storeIds.includes(storeId)) {
     throw new Error(
@@ -192,7 +195,7 @@ async function fetchAllProducts(): Promise<BookwiseProduct[]> {
     return []
   }
 
-  const included = (data.included ?? []) as Variant[]
+  const included = (data.included ?? []) as VariantResource[]
   const products: BookwiseProduct[] = []
 
   for (const product of data.data) {
