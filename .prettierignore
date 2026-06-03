@@ -1,0 +1,34 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Backup
+.backup
+
