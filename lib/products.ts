@@ -6,17 +6,22 @@ import {
   listProducts,
   listStores,
   listVariants,
-  type Product,
-  type Variant,
 } from '@lemonsqueezy/lemonsqueezy.js'
 
 import { configureLemonSqueezy, getStoreId } from '@/lib/lemonsqueezy'
 import type { BookwiseProduct } from '@/lib/types'
 import { formatCurrency } from '@/utils/formatCurrency'
 
-/** JSON:API 리소스 (목록·included 항목) */
-type ProductResource = Product['data']
-type VariantResource = Variant['data']
+/** listProducts / listVariants 응답의 JSON:API 리소스 항목 */
+type ListProductsPayload = NonNullable<
+  Awaited<ReturnType<typeof listProducts>>['data']
+>
+type ListVariantsPayload = NonNullable<
+  Awaited<ReturnType<typeof listVariants>>['data']
+>
+
+type ProductResource = NonNullable<ListProductsPayload['data']>[number]
+type VariantResource = NonNullable<ListVariantsPayload['data']>[number]
 
 const SELLABLE_PRODUCT_STATUSES = new Set(['published', 'draft'])
 

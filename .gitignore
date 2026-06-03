@@ -16,6 +16,9 @@ docs/generated/
 *.log
 logs/
 
+# bkit plugin runtime (local only)
+.bkit/
+
 # Environment
 .env
 .env.local
